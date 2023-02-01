@@ -1,10 +1,13 @@
-
 -- ** Buffwatch Classic
 -- **
 
 -- Changes
 -- 
 -- 1.00 Initial version for Classic based on Buffwatch++ v8.11
+
+-- 1.01 
+-- Fixed checking missing buff events after combat
+-- Fixed loading options on login/reload
 
 -- ****************************************************************************
 -- **                                                                        **
@@ -17,8 +20,8 @@ local addonName, BUFFWATCHADDON = ...;
 BUFFWATCHADDON_G = { };
 
 BUFFWATCHADDON.NAME = "Buffwatch Classic";
-BUFFWATCHADDON.VERSION = "1.00";
-BUFFWATCHADDON.RELEASE_DATE = "9 Aug 2019";
+BUFFWATCHADDON.VERSION = "1.01";
+BUFFWATCHADDON.RELEASE_DATE = "27 Aug 2019";
 BUFFWATCHADDON.HELPFRAMENAME = "Buffwatch Help";
 BUFFWATCHADDON.MODE_DROPDOWN_LIST = {
     "Solo",
@@ -141,13 +144,13 @@ function BUFFWATCHADDON_G.OnLoad(self)
     GroupBuffs.Buff["Flask of the Titans"] = 2;
     GroupBuffs.Buff["Flask of Distilled Wisdom"] = 2;
     GroupBuffs.Buff["Flask of Chromatic Resistance"] = 2;
-	GroupBuffs.Buff["Flask of Petrification"] = 2;
+    GroupBuffs.Buff["Flask of Petrification"] = 2;
 
     GroupBuffs.GroupName[3] = "Agility Elixirs"
     GroupBuffs.Buff["Elixir of the Mongoose"] = 3;
     GroupBuffs.Buff["Elixir of Greater Agility"] = 3;
-	
-	GroupBuffs.GroupName[4] = "Armor Elixirs"
+
+    GroupBuffs.GroupName[4] = "Armor Elixirs"
     GroupBuffs.Buff["Elixir of Superior Defense"] = 4;
     GroupBuffs.Buff["Elixir of Greater Defense"] = 4;
 
@@ -169,7 +172,7 @@ end
 
 function BUFFWATCHADDON_G.OnEvent(self, event, ...)
 --[[
-if event ~= "ADDON_LOADED" or select(1, ...) == "Buffwatch" then
+if event ~= "ADDON_LOADED" or select(1, ...) == "BuffwatchClassic" then
     BUFFWATCHADDON.Debug("Event "..event.." fired. Vars :");
     for i = 1, select("#", ...) do
         BUFFWATCHADDON.Debug("i="..i..", v="..select(i, ...));
@@ -178,12 +181,10 @@ end
 ]]
 
     -- Set default values, if unset
-    if event == "ADDON_LOADED" and select(1, ...) == "Buffwatch" then
-    
+    if event == "ADDON_LOADED" and select(1, ...) == "BuffwatchClassic" then
         -- Check version and setup config
-        BUFFWATCHADDON.VersionCheck();        
+        BUFFWATCHADDON.VersionCheck();
         BUFFWATCHADDON.Options_Init();
-        
     end
 
     if event == "PLAYER_LOGIN" then
@@ -586,8 +587,8 @@ function BUFFWATCHADDON_G.Buff_Tooltip(self)
     end
     
     if GroupBuffs.Buff[buff] ~= nil then
-    	GameTooltip:AddLine("Group: "..GroupBuffs.GroupName[GroupBuffs.Buff[buff]], 0.2, 1, 0.2);
-    	GameTooltip:Show();
+        GameTooltip:AddLine("Group: "..GroupBuffs.GroupName[GroupBuffs.Buff[buff]], 0.2, 1, 0.2);
+        GameTooltip:Show();
     end
 
 end
@@ -643,25 +644,12 @@ function BUFFWATCHADDON.SlashHandler(msg)
 end
 
 -- Config changes :
---  7.02 - Added versioning for config, Renamed HideOmniCC to HideCooldownText, Added CooldownTextScale to player config
---  7.03 - Added versioning for player config, Moved CooldownTextScale to config
---  8.10 - Added HideUnmonitored and Minimized to player config
+--  1.00 -- First version, none as yet!
 function BUFFWATCHADDON.VersionCheck()
 
     if BuffwatchConfig.Version == BUFFWATCHADDON.VERSION then
         -- Nothing to do
     else
-    
-        -- pre 7.02
-        if BuffwatchConfig.Version == nil then
-
-            -- Update old setting name
-            if BuffwatchConfig.HideOmniCC ~= nil then
-                BuffwatchConfig.HideCooldownText = BuffwatchConfig.HideOmniCC;
-                BuffwatchConfig.HideOmniCC = nil;
-            end
-        
-        end
         
         BUFFWATCHADDON.CopyDefaults(BUFFWATCHADDON.DEFAULTS, BuffwatchConfig);
        
@@ -672,10 +660,6 @@ function BUFFWATCHADDON.VersionCheck()
     if BuffwatchPlayerConfig.Version == BUFFWATCHADDON.VERSION then
         -- Nothing to do
     else
-    
-        if BuffwatchPlayerConfig.Version == "7.02" then
-            BuffwatchPlayerConfig.CooldownTextScale = nil;
-        end
         
         BUFFWATCHADDON.CopyDefaults(BUFFWATCHADDON.PLAYER_DEFAULTS, BuffwatchPlayerConfig);
     
@@ -1225,13 +1209,13 @@ function BUFFWATCHADDON.Player_GetBuffs(v)
 
                 -- temporary code to get around broken RAID filter for UnitAura()
                 local buff, icon, _, _, duration, expTime, caster = UnitBuff(v.UNIT_ID, i);
-			
+            
                 if buff and showbuffs == "RAID" then
-                	local isCastable = GetSpellInfo(buff);
-                	-- If we cant cast this buff, dont show it
-                	if isCastable == nil then
-                		buff = nil;
-                	end
+                    local isCastable = GetSpellInfo(buff);
+                    -- If we cant cast this buff, dont show it
+                    if isCastable == nil then
+                        buff = nil;
+                    end
                 end
                 
                 local curr_buff = _G["BuffwatchFrame_PlayerFrame"..v.ID.."_Buff"..i];
@@ -1726,8 +1710,8 @@ function BUFFWATCHADDON.Process_InCombat_Events()
 
         elseif t[1] == "GetBuffs" then
 
-            if Player_Info[t[2]] ~= nil then
-            	BUFFWATCHADDON.Player_GetBuffs(t[2]);
+            if Player_Info[t[2].Name] ~= nil then
+                BUFFWATCHADDON.Player_GetBuffs(t[2]);
             end
 
         end
@@ -1861,7 +1845,7 @@ function BUFFWATCHADDON.UnitHasBuff(unit, buff)
     if not thisbuff then break; end
 
     if thisbuff == buff then
-	
+    
       return i, duration, expTime;
 
     end
@@ -1927,17 +1911,17 @@ end
 function BUFFWATCHADDON_G:Set_CooldownTextScale()
 
     for k, v in pairs(Player_Info) do
-        
+
         for i = 1, 32 do
 
             local cooldown = _G["BuffwatchFrame_PlayerFrame"..v.ID.."_Buff"..i.."_Cooldown"];
-			
+
             if cooldown then
                 cooldown:SetScale(BuffwatchConfig.CooldownTextScale);
             end
-			
+
         end
-		
+
     end
 
 end
@@ -2043,18 +2027,18 @@ function BUFFWATCHADDON.Wait(delay, func, ...)
 end
 
 function BUFFWATCHADDON.CopyDefaults(from, to)
-	if not from then return { } end
-	if not to then to = { } end
+    if not from then return { } end
+    if not to then to = { } end
     
-	for k, v in pairs(from) do
-		if type(v) == "table" then
-			to[k] = BUFFWATCHADDON.CopyDefaults(v, to[k]);
-		elseif type(v) ~= type(to[k]) then
-			to[k] = v;
-		end
-	end
+    for k, v in pairs(from) do
+        if type(v) == "table" then
+            to[k] = BUFFWATCHADDON.CopyDefaults(v, to[k]);
+        elseif type(v) ~= type(to[k]) then
+            to[k] = v;
+        end
+    end
     
-	return to;
+    return to;
 end
 
 function BUFFWATCHADDON.Print(msg, R, G, B)
