@@ -290,10 +290,6 @@ function BUFFWATCHADDON_G.Options_HideCooldownText_OnClick(self)
 
     BUFFWATCHADDON.GetAllBuffs();
 
-    if (OmniCC) then
-        OmniCC.Timer:ForAll('UpdateShown');
-    end
-
 end
 
 function BUFFWATCHADDON.Options_SetDefaults()

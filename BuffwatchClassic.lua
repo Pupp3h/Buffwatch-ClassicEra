@@ -9,6 +9,10 @@
 -- Fixed checking missing buff events after combat
 -- Fixed loading options on login/reload
 
+-- 1.02
+-- Optimisation when checking buffs
+-- Fixed toggling Hide cooldown text when OmniCC is installed
+
 -- ****************************************************************************
 -- **                                                                        **
 -- **  Variables                                                             **
@@ -20,8 +24,8 @@ local addonName, BUFFWATCHADDON = ...;
 BUFFWATCHADDON_G = { };
 
 BUFFWATCHADDON.NAME = "Buffwatch Classic";
-BUFFWATCHADDON.VERSION = "1.01";
-BUFFWATCHADDON.RELEASE_DATE = "27 Aug 2019";
+BUFFWATCHADDON.VERSION = "1.02";
+BUFFWATCHADDON.RELEASE_DATE = "31 Aug 2019";
 BUFFWATCHADDON.HELPFRAMENAME = "Buffwatch Help";
 BUFFWATCHADDON.MODE_DROPDOWN_LIST = {
     "Solo",
@@ -858,11 +862,9 @@ function BUFFWATCHADDON.GetPlayerInfo()
 
                 -- Update any information that may have changed about this person,
                 --    whether we captured before, or are taking for first time
-
                 if Player_Info[unitname]["UNIT_ID"] ~= UNIT_IDs[i] then
 
                     -- UNIT_ID has changed, so update secure button attributes
-
                     local namebutton = _G["BuffwatchFrame_PlayerFrame"..Player_Info[unitname]["ID"].."_Name"];
 
                     Player_Info[unitname]["UNIT_ID"] = UNIT_IDs[i];
@@ -1209,8 +1211,10 @@ function BUFFWATCHADDON.Player_GetBuffs(v)
 
                 -- temporary code to get around broken RAID filter for UnitAura()
                 local buff, icon, _, _, duration, expTime, caster = UnitBuff(v.UNIT_ID, i);
-            
-                if buff and showbuffs == "RAID" then
+
+                if not buff then break; end
+
+                if showbuffs == "RAID" then
                     local isCastable = GetSpellInfo(buff);
                     -- If we cant cast this buff, dont show it
                     if isCastable == nil then
@@ -1292,9 +1296,10 @@ function BUFFWATCHADDON.Player_GetBuffs(v)
         for i = 1, 32 do
 
             local curr_buff = _G["BuffwatchFrame_PlayerFrame"..v.ID.."_Buff"..i];
+            if not curr_buff then break; end
             local curr_buff_icon = _G["BuffwatchFrame_PlayerFrame"..v.ID.."_Buff"..i.."Icon"];
 
-            if curr_buff and curr_buff:IsShown() then
+            if curr_buff:IsShown() then
 
                 -- Set buff icon to grey if player is dead or offline
                 if v.DeadorDC == 1 then
@@ -1522,6 +1527,8 @@ function BUFFWATCHADDON.Player_LoadBuffs(v)
                     curr_buff:Hide();
                     curr_buff_icon:SetTexture(nil);
 
+                else
+                    break;
                 end
 
             end
@@ -1530,12 +1537,12 @@ function BUFFWATCHADDON.Player_LoadBuffs(v)
 
         _G["BuffwatchFrame_PlayerFrame"..v.ID.."_Lock"]:SetChecked(true);
 
-     else
+    else
 
         _G["BuffwatchFrame_PlayerFrame"..v.ID.."_Lock"]:SetChecked(false);
         BuffwatchFrame_LockAll:SetChecked(false);
 
-     end
+    end
 
 end
 
@@ -1845,7 +1852,7 @@ function BUFFWATCHADDON.UnitHasBuff(unit, buff)
     if not thisbuff then break; end
 
     if thisbuff == buff then
-    
+
       return i, duration, expTime;
 
     end
@@ -1918,6 +1925,8 @@ function BUFFWATCHADDON_G:Set_CooldownTextScale()
 
             if cooldown then
                 cooldown:SetScale(BuffwatchConfig.CooldownTextScale);
+            else
+                break;
             end
 
         end
@@ -2061,6 +2070,55 @@ end
 
 -- for debugging
 --[[
+
+function BUFFWATCHADDON_G.CheckBuffs(detail)
+
+    BUFFWATCHADDON.Debug("Checking player buffs and frames...");
+    for k, v in pairs(Player_Info) do
+        if detail == 1 then
+            BUFFWATCHADDON.Debug("Checking buffs for "..v.Name.."...");
+        end
+        local buffCount = 0;
+        local lastBuff = 0;
+        for i = 1, 32 do
+            local buff = UnitBuff(v.UNIT_ID, i);
+            if buff then
+                if detail == 1 then
+                    BUFFWATCHADDON.Debug("Found buff "..i.." : "..buff);
+                end
+                buffCount = buffCount + 1;
+                lastBuff = i;
+            end
+        end
+        if buffCount == lastBuff then
+            BUFFWATCHADDON.Debug("All buffs ("..buffCount..") for "..v.Name.." were sequential", 100, 215, 130);
+        else
+            BUFFWATCHADDON.Debug("Non sequential player buffs for "..v.Name.."! There were "..buffCount.." buffs, but last buffId was "..lastBuff, 215, 130, 100);
+        end
+
+        if detail == 1 then
+            BUFFWATCHADDON.Debug("Checking buffframes for "..v.Name.."...");
+        end
+        local frameCount = 0;
+        local lastFrame = 0;
+        for i = 1, 32 do
+            local curr_buff = _G["BuffwatchFrame_PlayerFrame"..v.ID.."_Buff"..i];
+            if curr_buff then
+                if detail == 1 then
+                    BUFFWATCHADDON.Debug("Found buffframe "..i.." : "..curr_buff:GetAttribute("spell1"));
+                end
+                frameCount = frameCount + 1;
+                lastFrame = i;
+            end
+        end
+        if frameCount == lastFrame then
+            BUFFWATCHADDON.Debug("All buffframes ("..frameCount..") for "..v.Name.." were sequential", 100, 215, 130);
+        else
+            BUFFWATCHADDON.Debug("Non sequential player buffframes for "..v.Name.."! There were "..frameCount.." buffs, but last buffId was "..lastFrame, 215, 130, 100);
+        end
+    end
+
+end
 
 function BUFFWATCHADDON_G.DebugPosition()
 
