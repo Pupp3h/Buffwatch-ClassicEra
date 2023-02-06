@@ -39,6 +39,9 @@
 -- Fixed temp enchant alignment when player has no normal buffs
 -- Fixed alt-rightclick error on another player when we have temp enchant
 
+-- 1.09
+-- Added support for buff ranks
+
 -- ****************************************************************************
 -- **                                                                        **
 -- **  Variables                                                             **
@@ -50,8 +53,8 @@ local addonName, BUFFWATCHADDON = ...;
 BUFFWATCHADDON_G = { };
 
 BUFFWATCHADDON.NAME = "Buffwatch Classic";
-BUFFWATCHADDON.VERSION = "1.08";
-BUFFWATCHADDON.RELEASE_DATE = "02 Oct 2019";
+BUFFWATCHADDON.VERSION = "1.09";
+BUFFWATCHADDON.RELEASE_DATE = "05 Oct 2019";
 BUFFWATCHADDON.HELPFRAMENAME = "Buffwatch Help";
 BUFFWATCHADDON.MODE_DROPDOWN_LIST = {
     "Solo",
@@ -798,19 +801,28 @@ function BUFFWATCHADDON_G.Buff_Tooltip(self)
     local playername = _G["BuffwatchFrame_PlayerFrame"..self:GetParent():GetID().."_NameText"]:GetText();
     local unit = Player_Info[playername]["UNIT_ID"];
     local buff = BuffwatchPlayerBuffs[playername]["Buffs"][self:GetID()]["Buff"];
-    local buffbuttonid = BUFFWATCHADDON.UnitHasBuff(unit, buff);
+    local rank = BuffwatchPlayerBuffs[playername]["Buffs"][self:GetID()]["Rank"];
+
+    local buffbuttonid = BUFFWATCHADDON.UnitHasBuff(unit, buff, rank);
 
     if buffbuttonid ~= 0 then
 
         -- If the buff is present, show the tooltip for it
         GameTooltip:SetOwner(self, "ANCHOR_BOTTOMLEFT");
         GameTooltip:SetUnitBuff(unit, buffbuttonid);
+        if rank then
+            GameTooltip:AddLine("Rank: "..rank, 1, 0.82, 0);
+        end
 
     else
 
         -- If the buff isn't present, create a tooltip
         GameTooltip:SetOwner(self, "ANCHOR_BOTTOMLEFT");
-        GameTooltip:SetText(buff, 1, 1, 0);
+        if rank then
+            GameTooltip:SetText(buff.." (Rank "..rank..")", 1, 0.82, 0);
+        else
+            GameTooltip:SetText(buff, 1, 0.82, 0);
+        end
 
     end
 
@@ -1475,12 +1487,14 @@ function BUFFWATCHADDON.Player_GetBuffs(v)
 
             for i = 1, maxBuffCount do
 
-                local buff, icon, _, _, duration, expTime, caster = UnitAura(v.UNIT_ID, i, showbuffs);
+                local buff, icon, _, _, duration, expTime, caster, _, _, spellId = UnitAura(v.UNIT_ID, i, showbuffs);
                 local curr_buff = _G["BuffwatchFrame_PlayerFrame"..v.ID.."_Buff"..i];
 
                 if not buff and not curr_buff then break; end
 
                 if buff then
+
+                    local rank = BUFFWATCHADDON.GetSpellRank(spellId);
 
                     -- Check if buff button has been created
                     if curr_buff == nil then
@@ -1502,6 +1516,7 @@ function BUFFWATCHADDON.Player_GetBuffs(v)
                     curr_buff:Show();
                     BuffwatchPlayerBuffs[v.Name]["Buffs"][i] = { };
                     BuffwatchPlayerBuffs[v.Name]["Buffs"][i]["Buff"] = buff;
+                    BuffwatchPlayerBuffs[v.Name]["Buffs"][i]["Rank"] = rank;
                     BuffwatchPlayerBuffs[v.Name]["Buffs"][i]["Icon"] = icon;
                     if caster then
                         BuffwatchPlayerBuffs[v.Name]["Buffs"][i]["CasterName"] = UnitName(caster);
@@ -1510,7 +1525,11 @@ function BUFFWATCHADDON.Player_GetBuffs(v)
                     -- Setup action for this buff button
                     curr_buff:SetAttribute("type", "spell");
                     curr_buff:SetAttribute("unit1", v.UNIT_ID);
-                    curr_buff:SetAttribute("spell1", buff);
+                    if rank then
+                        curr_buff:SetAttribute("spell1", buff.."(Rank "..rank..")");
+                    else
+                        curr_buff:SetAttribute("spell1", buff);
+                    end
 --BUFFWATCHADDON.Debug("GetBuffs1: Player="..v.Name)
                     if BuffwatchConfig.Spirals == true and duration and duration > 0 then
 --BUFFWATCHADDON.Debug("GetBuffs1: BuffID="..i..", expTime="..expTime..",duration="..duration)
@@ -1576,13 +1595,14 @@ function BUFFWATCHADDON.Player_GetBuffs(v)
                     else
 
                         local buff = BuffwatchPlayerBuffs[v.Name]["Buffs"][i]["Buff"];
+                        local rank = BuffwatchPlayerBuffs[v.Name]["Buffs"][i]["Rank"];
 
                         local castername;
                         if SpecialBuffs[buff] == 1 then
                             castername = BuffwatchPlayerBuffs[v.Name]["Buffs"][i]["CasterName"];
                         end
 
-                        local buffid = BUFFWATCHADDON.FindBuff(playerbuffs, buff, castername);
+                        local buffid = BUFFWATCHADDON.FindBuff(playerbuffs, buff, rank, castername);
 
                         if buffid ~= 0 then
                             -- Set buff icon to its normal colour if it exists
@@ -1594,63 +1614,70 @@ function BUFFWATCHADDON.Player_GetBuffs(v)
                             end
                         else
 
-                            -- Buff has expired, start by checking if there is an automatic replacement
-                            local buffGroup = GroupBuffs.Buff[buff];
+                            -- Buff has expired, start by checking for different rank of same buff
+                            buffid = BUFFWATCHADDON.FindBuff(playerbuffs, buff, nil, castername);
 
-                            if buffGroup then
+                            if buffid == 0 then
 
-                                -- Iterate Group for this buff
-                                for _, val in ipairs(GroupBuffs.Group[buffGroup]) do
+                                -- Still nothing, Check if there is an automatic replacement
+                                local buffGroup = GroupBuffs.Buff[buff];
 
-                                    if val ~= buff then
-                                        -- note: may need to start passing castername in here if we end up
-                                        --       having Special Buffs that also have replacements
-                                        buffid = BUFFWATCHADDON.FindBuff(playerbuffs, val);
+                                if buffGroup then
 
-                                        if buffid ~= 0 then
-                                            buff = val;
-                                            break;
+                                    -- Iterate Group for this buff
+                                    for _, val in ipairs(GroupBuffs.Group[buffGroup]) do
+
+                                        if val ~= buff then
+
+                                            buffid = BUFFWATCHADDON.FindBuff(playerbuffs, val, nil, castername);
+
+                                            if buffid ~= 0 then
+                                                buff = val;
+                                                break;
+                                            end
+
                                         end
 
                                     end
 
                                 end
 
-                                if buffid ~= 0 then
+                            end
 
-                                     -- Set buff icon to its normal colour as it has an automatic replacement
-                                    curr_buff_icon:SetVertexColor(1,1,1);
+                            if buffid ~= 0 then
 
-                                    if InCombatLockdown() then
+                                -- Set buff icon to its normal colour as it has an automatic replacement
+                                curr_buff_icon:SetVertexColor(1,1,1);
 
-                                        BUFFWATCHADDON.Add_InCombat_Events({"GetBuffs", v});
+                                if InCombatLockdown() then
 
-                                    else
-
-                                        -- Replace buff button with auto replacement
-                                        local icon = playerbuffs[buffid]["Icon"];
-                                        curr_buff_icon:SetTexture(icon);
-                                        BuffwatchPlayerBuffs[v.Name]["Buffs"][i] = { };
-                                        BuffwatchPlayerBuffs[v.Name]["Buffs"][i]["Buff"] = buff;
-                                        BuffwatchPlayerBuffs[v.Name]["Buffs"][i]["Icon"] = icon;
-
-                                        -- Setup action for this buff button
-                                        curr_buff:SetAttribute("type", "spell");
-                                        curr_buff:SetAttribute("unit1", v.UNIT_ID);
-                                        curr_buff:SetAttribute("spell1", buff);
-
-                                    end
-
-                                    local caster = playerbuffs[buffid]["Caster"];
-                                    if caster then
-                                        BuffwatchPlayerBuffs[v.Name]["Buffs"][i]["CasterName"] = UnitName(caster);
-                                    end
+                                    BUFFWATCHADDON.Add_InCombat_Events({"GetBuffs", v});
 
                                 else
 
-                                    -- Possible replacement buff isn't on player, so set icon to red
-                                    curr_buff_icon:SetVertexColor(1,0,0);
+                                    -- Replace buff button with auto replacement
+                                    rank = playerbuffs[buffid]["Rank"];
+                                    local icon = playerbuffs[buffid]["Icon"];
+                                    curr_buff_icon:SetTexture(icon);
+                                    BuffwatchPlayerBuffs[v.Name]["Buffs"][i] = { };
+                                    BuffwatchPlayerBuffs[v.Name]["Buffs"][i]["Buff"] = buff;
+                                    BuffwatchPlayerBuffs[v.Name]["Buffs"][i]["Rank"] = rank;
+                                    BuffwatchPlayerBuffs[v.Name]["Buffs"][i]["Icon"] = icon;
 
+                                    -- Setup action for this buff button
+                                    curr_buff:SetAttribute("type", "spell");
+                                    curr_buff:SetAttribute("unit1", v.UNIT_ID);
+                                    if rank then
+                                        curr_buff:SetAttribute("spell1", buff.."(Rank "..rank..")");
+                                    else
+                                        curr_buff:SetAttribute("spell1", buff);
+                                    end
+
+                                end
+
+                                local caster = playerbuffs[buffid]["Caster"];
+                                if caster then
+                                    BuffwatchPlayerBuffs[v.Name]["Buffs"][i]["CasterName"] = UnitName(caster);
                                 end
 
                             else
@@ -1818,12 +1845,13 @@ function BUFFWATCHADDON.GetPlayerBuffs(unitid)
 
     for i = 1, maxBuffCount do
 
-        local buff, icon, _, _, duration, expTime, caster = UnitAura(unitid, i, "HELPFUL");
+        local buff, icon, _, _, duration, expTime, caster, _, _, spellId = UnitAura(unitid, i, "HELPFUL");
 
         if not buff then break; end
 
         playerbuffs[i] = { };
         playerbuffs[i]["Buff"] = buff;
+        playerbuffs[i]["Rank"] = BUFFWATCHADDON.GetSpellRank(spellId);
         playerbuffs[i]["Icon"] = icon;
         playerbuffs[i]["Duration"] = duration;
         playerbuffs[i]["ExpTime"] = expTime;
@@ -1921,10 +1949,15 @@ function BUFFWATCHADDON.Player_LoadBuffs(v)
                 curr_buff:Show();
 
                 local buff = BuffwatchSaveBuffs[v.Name]["Buffs"][i]["Buff"];
+                local rank = BuffwatchSaveBuffs[v.Name]["Buffs"][i]["Rank"];
 
                 curr_buff:SetAttribute("type", "spell");
                 curr_buff:SetAttribute("unit1", v.UNIT_ID);
-                curr_buff:SetAttribute("spell1", buff);
+                if rank then
+                    curr_buff:SetAttribute("spell1", buff.."(Rank "..rank..")");
+                else
+                    curr_buff:SetAttribute("spell1", buff);
+                end
 
             else
 
@@ -2322,17 +2355,21 @@ function BUFFWATCHADDON.GetNextID(unitname)
 
 end
 
-function BUFFWATCHADDON.FindBuff(playerbuffs, buff, castername)
+function BUFFWATCHADDON.FindBuff(playerbuffs, buff, rank, castername)
 
     for i = 1, #playerbuffs do
 
         if playerbuffs[i]["Buff"] == buff then
 
-            if not castername or UnitName(playerbuffs[i]["Caster"]) == castername then
-
-                return i;
-
+            if rank and playerbuffs[i]["Rank"] ~= rank then
+                return 0;
             end
+
+            if castername and UnitName(playerbuffs[i]["Caster"]) ~= castername then
+                return 0;
+            end
+
+            return i;
 
         end
 
@@ -2342,19 +2379,28 @@ function BUFFWATCHADDON.FindBuff(playerbuffs, buff, castername)
 
 end
 
-function BUFFWATCHADDON.UnitHasBuff(unit, buff)
-
-    local thisbuff;
+function BUFFWATCHADDON.UnitHasBuff(unit, buff, rank)
 
     for i = 1, maxBuffCount do
 
-        thisbuff = UnitAura(unit, i, "HELPFUL");
+        local thisbuff, _, _, _, _, _, _, _, _, spellId = UnitAura(unit, i, "HELPFUL");
 
         if not thisbuff then break; end
 
         if thisbuff == buff then
 
-            return i;
+            if rank then
+
+                local thisrank = BUFFWATCHADDON.GetSpellRank(spellId);
+                if thisrank == rank then
+                    return i;
+                else
+                    return 0;
+                end
+
+            else
+                return i;
+            end
 
         end
 
@@ -2652,5 +2698,10 @@ function BUFFWATCHADDON_G.GetGroupBuffs()
 
     return GroupBuffs;
 
+end
+
+function BUFFWATCHADDON_G.GetSpellRank(spellId)
+
+    return BUFFWATCHADDON.GetSpellRank(spellId);
 end
 --]]
