@@ -69,6 +69,12 @@
 -- 1.16
 -- Fixed Window sizing with Hide Unmonitored and player has temporary enchant
 
+-- 1.17
+-- ToC update to 11403
+-- Updated spell ranks
+-- Fixed backdrops & border
+-- Fixed slider display in options
+
 -- ****************************************************************************
 -- **                                                                        **
 -- **  Variables                                                             **
@@ -80,8 +86,8 @@ local addonName, BUFFWATCHADDON = ...;
 BUFFWATCHADDON_G = { };
 
 BUFFWATCHADDON.NAME = "Buffwatch Classic";
-BUFFWATCHADDON.VERSION = "1.16";
-BUFFWATCHADDON.RELEASE_DATE = "31 Oct 2020";
+BUFFWATCHADDON.VERSION = "1.17";
+BUFFWATCHADDON.RELEASE_DATE = "12 Sep 2022";
 BUFFWATCHADDON.HELPFRAMENAME = "Buffwatch Help";
 BUFFWATCHADDON.MODE_DROPDOWN_LIST = {
     "Solo",
@@ -137,6 +143,16 @@ BUFFWATCHADDON.PLAYER_DEFAULTS = {
     Version                 = BUFFWATCHADDON.VERSION,
     Visible                 = true,
     WindowLocked            = false
+};
+
+BUFFWATCHADDON_G.BACKDROPSTYLE = {
+	bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",
+	edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+	tile = true,
+	tileEdge = true,
+	tileSize = 12,
+	edgeSize = 12,
+	insets = { left = 2, right = 2, top = 2, bottom = 2 },
 };
 
 local grouptype;                -- solo, raid or party

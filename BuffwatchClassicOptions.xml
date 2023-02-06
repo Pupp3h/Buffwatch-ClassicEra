@@ -323,6 +323,7 @@
                 </Anchors>
                 <Scripts>
                     <OnLoad>
+                        self:OnBackdropLoaded();
                         _G[self:GetName().."High"]:SetText("1");
                         _G[self:GetName().."Low"]:SetText("0");
                         self:SetMinMaxValues(0.0,1.0);
@@ -356,6 +357,7 @@
                 </Anchors>
                 <Scripts>
                     <OnLoad>
+                        self:OnBackdropLoaded();
                         _G[self:GetName().."High"]:SetText("200%");
                         _G[self:GetName().."Low"]:SetText("50%");
                         self:SetMinMaxValues(0.5,2.0);
@@ -389,6 +391,7 @@
                 </Anchors>
                 <Scripts>
                     <OnLoad>
+                        self:OnBackdropLoaded();
                         _G[self:GetName().."High"]:SetText("100%");
                         _G[self:GetName().."Low"]:SetText("20%");
                         self:SetMinMaxValues(0.2,1.0);
