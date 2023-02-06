@@ -27,6 +27,9 @@
 -- 1.05
 -- Added support for LibClassicDurations, to show cooldown spirals for all
 
+-- 1.06
+-- Added check to only load LibClassicDurations version 1.8 or newer
+
 -- ****************************************************************************
 -- **                                                                        **
 -- **  Variables                                                             **
@@ -38,8 +41,8 @@ local addonName, BUFFWATCHADDON = ...;
 BUFFWATCHADDON_G = { };
 
 BUFFWATCHADDON.NAME = "Buffwatch Classic";
-BUFFWATCHADDON.VERSION = "1.05";
-BUFFWATCHADDON.RELEASE_DATE = "21 Sep 2019";
+BUFFWATCHADDON.VERSION = "1.06";
+BUFFWATCHADDON.RELEASE_DATE = "22 Sep 2019";
 BUFFWATCHADDON.HELPFRAMENAME = "Buffwatch Help";
 BUFFWATCHADDON.MODE_DROPDOWN_LIST = {
     "Solo",
@@ -224,10 +227,14 @@ end
             end
         end
 
-        local LibClassicDurations = LibStub("LibClassicDurations", true);
+        local LibClassicDurations, libversion = LibStub("LibClassicDurations", true);
         if LibClassicDurations then
-            LibClassicDurations:Register(addonName);
-            UnitAura = LibClassicDurations.UnitAuraWrapper;
+            if libversion >= 18 then
+                LibClassicDurations:Register(addonName);
+                UnitAura = LibClassicDurations.UnitAuraWrapper;
+            else
+                BUFFWATCHADDON.Print("Buffwatch requires LibClassicDurations version 1.8 or newer. Other player cooldown spirals will not be shown.");
+            end
         end
 
     end
