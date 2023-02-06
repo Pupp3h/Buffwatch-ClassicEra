@@ -14,6 +14,19 @@ function BUFFWATCHADDON.GetSpellRank(spellId)
     end
 end
 
+function BUFFWATCHADDON.GetSpellRankText(spellId)
+
+    if spellId > 32768 then return nil; end
+
+    local byteval = string.byte(BUFFWATCHADDON.SpellRanks, spellId);
+
+    if byteval > 48 then
+        return GetSpellSubtext(spellId); -- Get localized string for rank, now we know the subtext is a rank
+    else
+        return nil;
+    end
+end
+
 BUFFWATCHADDON.SpellRanks = table.concat({
     ".........1......1...................................1.............1....1.....1..........1.........111...........1..1.1.1.1......",
     "....1..1..1...2.3......................1...1................................2......................2.................1..........",

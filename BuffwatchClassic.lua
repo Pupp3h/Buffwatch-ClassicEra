@@ -42,6 +42,10 @@
 -- 1.09
 -- Added support for buff ranks
 
+-- 1.10
+-- Fixed issue with buff rank localization
+-- Fixed buff names for Flasks & Elixirs
+
 -- ****************************************************************************
 -- **                                                                        **
 -- **  Variables                                                             **
@@ -53,8 +57,8 @@ local addonName, BUFFWATCHADDON = ...;
 BUFFWATCHADDON_G = { };
 
 BUFFWATCHADDON.NAME = "Buffwatch Classic";
-BUFFWATCHADDON.VERSION = "1.09";
-BUFFWATCHADDON.RELEASE_DATE = "05 Oct 2019";
+BUFFWATCHADDON.VERSION = "1.10";
+BUFFWATCHADDON.RELEASE_DATE = "07 Oct 2019";
 BUFFWATCHADDON.HELPFRAMENAME = "Buffwatch Help";
 BUFFWATCHADDON.MODE_DROPDOWN_LIST = {
     "Solo",
@@ -234,19 +238,19 @@ function BUFFWATCHADDON_G.OnLoad(self)
     GroupBuffs.Buff["Greater Blessing of Sanctuary"] = 12;
 
     GroupBuffs.GroupName[13] = "Flasks";
-    GroupBuffs.Buff["Flask of Supreme Power"] = 13;
+    GroupBuffs.Buff["Supreme Power"] = 13;
     GroupBuffs.Buff["Flask of the Titans"] = 13;
-    GroupBuffs.Buff["Flask of Distilled Wisdom"] = 13;
-    GroupBuffs.Buff["Flask of Chromatic Resistance"] = 13;
-    GroupBuffs.Buff["Flask of Petrification"] = 13;
+    GroupBuffs.Buff["Distilled Wisdom"] = 13;
+    GroupBuffs.Buff["Chromatic Resistance"] = 13;
+    GroupBuffs.Buff["Petrification"] = 13;
 
     GroupBuffs.GroupName[14] = "Agility Elixirs";
     GroupBuffs.Buff["Elixir of the Mongoose"] = 14;
-    GroupBuffs.Buff["Elixir of Greater Agility"] = 14;
+    GroupBuffs.Buff["Greater Agility"] = 14;
 
     GroupBuffs.GroupName[15] = "Armor Elixirs";
-    GroupBuffs.Buff["Elixir of Superior Defense"] = 15;
-    GroupBuffs.Buff["Elixir of Greater Defense"] = 15;
+    GroupBuffs.Buff["Greater Armor"] = 15; -- Elixir of Superior Defense
+    GroupBuffs.Buff["Armor"] = 15; -- Elixir of Greater Defense / Elixir of Defense / Scroll of Protection
 
     GroupBuffs.Group = { };
 
@@ -811,7 +815,7 @@ function BUFFWATCHADDON_G.Buff_Tooltip(self)
         GameTooltip:SetOwner(self, "ANCHOR_BOTTOMLEFT");
         GameTooltip:SetUnitBuff(unit, buffbuttonid);
         if rank then
-            GameTooltip:AddLine("Rank: "..rank, 1, 0.82, 0);
+            GameTooltip:AddLine(rank, 1, 0.82, 0);
         end
 
     else
@@ -819,7 +823,7 @@ function BUFFWATCHADDON_G.Buff_Tooltip(self)
         -- If the buff isn't present, create a tooltip
         GameTooltip:SetOwner(self, "ANCHOR_BOTTOMLEFT");
         if rank then
-            GameTooltip:SetText(buff.." (Rank "..rank..")", 1, 0.82, 0);
+            GameTooltip:SetText(buff.." ("..rank..")", 1, 0.82, 0);
         else
             GameTooltip:SetText(buff, 1, 0.82, 0);
         end
@@ -1494,7 +1498,7 @@ function BUFFWATCHADDON.Player_GetBuffs(v)
 
                 if buff then
 
-                    local rank = BUFFWATCHADDON.GetSpellRank(spellId);
+                    local rank = BUFFWATCHADDON.GetSpellRankText(spellId);
 
                     -- Check if buff button has been created
                     if curr_buff == nil then
@@ -1525,11 +1529,8 @@ function BUFFWATCHADDON.Player_GetBuffs(v)
                     -- Setup action for this buff button
                     curr_buff:SetAttribute("type", "spell");
                     curr_buff:SetAttribute("unit1", v.UNIT_ID);
-                    if rank then
-                        curr_buff:SetAttribute("spell1", buff.."(Rank "..rank..")");
-                    else
-                        curr_buff:SetAttribute("spell1", buff);
-                    end
+                    curr_buff:SetAttribute("spell1", buff.."("..(rank or "")..")");
+
 --BUFFWATCHADDON.Debug("GetBuffs1: Player="..v.Name)
                     if BuffwatchConfig.Spirals == true and duration and duration > 0 then
 --BUFFWATCHADDON.Debug("GetBuffs1: BuffID="..i..", expTime="..expTime..",duration="..duration)
@@ -1667,11 +1668,7 @@ function BUFFWATCHADDON.Player_GetBuffs(v)
                                     -- Setup action for this buff button
                                     curr_buff:SetAttribute("type", "spell");
                                     curr_buff:SetAttribute("unit1", v.UNIT_ID);
-                                    if rank then
-                                        curr_buff:SetAttribute("spell1", buff.."(Rank "..rank..")");
-                                    else
-                                        curr_buff:SetAttribute("spell1", buff);
-                                    end
+                                    curr_buff:SetAttribute("spell1", buff.."("..(rank or "")..")");
 
                                 end
 
@@ -1851,7 +1848,7 @@ function BUFFWATCHADDON.GetPlayerBuffs(unitid)
 
         playerbuffs[i] = { };
         playerbuffs[i]["Buff"] = buff;
-        playerbuffs[i]["Rank"] = BUFFWATCHADDON.GetSpellRank(spellId);
+        playerbuffs[i]["Rank"] = BUFFWATCHADDON.GetSpellRankText(spellId);
         playerbuffs[i]["Icon"] = icon;
         playerbuffs[i]["Duration"] = duration;
         playerbuffs[i]["ExpTime"] = expTime;
@@ -1953,11 +1950,7 @@ function BUFFWATCHADDON.Player_LoadBuffs(v)
 
                 curr_buff:SetAttribute("type", "spell");
                 curr_buff:SetAttribute("unit1", v.UNIT_ID);
-                if rank then
-                    curr_buff:SetAttribute("spell1", buff.."(Rank "..rank..")");
-                else
-                    curr_buff:SetAttribute("spell1", buff);
-                end
+                curr_buff:SetAttribute("spell1", buff.."("..(rank or "")..")");
 
             else
 
@@ -2391,7 +2384,7 @@ function BUFFWATCHADDON.UnitHasBuff(unit, buff, rank)
 
             if rank then
 
-                local thisrank = BUFFWATCHADDON.GetSpellRank(spellId);
+                local thisrank = BUFFWATCHADDON.GetSpellRankText(spellId);
                 if thisrank == rank then
                     return i;
                 else
@@ -2703,5 +2696,10 @@ end
 function BUFFWATCHADDON_G.GetSpellRank(spellId)
 
     return BUFFWATCHADDON.GetSpellRank(spellId);
+end
+
+function BUFFWATCHADDON_G.GetSpellRankText(spellId)
+
+    return BUFFWATCHADDON.GetSpellRankText(spellId);
 end
 --]]
