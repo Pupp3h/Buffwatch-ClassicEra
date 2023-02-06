@@ -57,6 +57,9 @@
 -- Persist visible state between logins
 -- Added checkbox to hide or show Buffwatch in options panel
 
+-- 1.13
+-- ToC update
+
 -- ****************************************************************************
 -- **                                                                        **
 -- **  Variables                                                             **
@@ -68,8 +71,8 @@ local addonName, BUFFWATCHADDON = ...;
 BUFFWATCHADDON_G = { };
 
 BUFFWATCHADDON.NAME = "Buffwatch Classic";
-BUFFWATCHADDON.VERSION = "1.12";
-BUFFWATCHADDON.RELEASE_DATE = "23 Nov 2019";
+BUFFWATCHADDON.VERSION = "1.13";
+BUFFWATCHADDON.RELEASE_DATE = "29 Dec 2019";
 BUFFWATCHADDON.HELPFRAMENAME = "Buffwatch Help";
 BUFFWATCHADDON.MODE_DROPDOWN_LIST = {
     "Solo",
