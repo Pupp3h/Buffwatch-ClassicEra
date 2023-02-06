@@ -60,6 +60,9 @@
 -- 1.13
 -- ToC update
 
+-- 1.14
+-- Fixed potential sort error when player has temporary enchants
+
 -- ****************************************************************************
 -- **                                                                        **
 -- **  Variables                                                             **
@@ -71,8 +74,8 @@ local addonName, BUFFWATCHADDON = ...;
 BUFFWATCHADDON_G = { };
 
 BUFFWATCHADDON.NAME = "Buffwatch Classic";
-BUFFWATCHADDON.VERSION = "1.13";
-BUFFWATCHADDON.RELEASE_DATE = "29 Dec 2019";
+BUFFWATCHADDON.VERSION = "1.14b1";
+BUFFWATCHADDON.RELEASE_DATE = "08 Jan 2020";
 BUFFWATCHADDON.HELPFRAMENAME = "Buffwatch Help";
 BUFFWATCHADDON.MODE_DROPDOWN_LIST = {
     "Solo",
@@ -1317,7 +1320,7 @@ function BUFFWATCHADDON.PositionPlayerFrame(playerid)
         or (playerdata.IsUnitPlayer and next(BuffwatchPlayerTempEnch, nil) ~= nil)) then
 
         -- Insert back into current order in new position
-        table.insert(Current_Order, fpos,  playerdata);
+        table.insert(Current_Order, fpos, playerdata);
 
         -- Reattach into player frames in new position
         if fpos == 1 then
@@ -1377,7 +1380,7 @@ function BUFFWATCHADDON.GetPlayerFramePosition(playerid)
             -- Adjust final player count, if any frames are hidden
             if _G["BuffwatchFrame_PlayerFrame"..v.ID.."_Lock"]:GetChecked()
                 and next(BuffwatchPlayerBuffs[v.Name]["Buffs"], nil) == nil
-                and next(BuffwatchPlayerTempEnch, nil) == nil then
+                and (not v.IsUnitPlayer or next(BuffwatchPlayerTempEnch, nil) == nil) then
 
                 hiddencount = hiddencount + 1;
             end
