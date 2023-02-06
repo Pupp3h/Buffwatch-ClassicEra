@@ -32,6 +32,8 @@
 
 -- 1.07
 -- Added checking for Temporary Weapon Enchants
+-- Added group buffs for Intellect, Fortitude, Spirit, MotW, Shadow Prot,
+--  Might, Wisdom, Salvation, Kings, Light & Sanctuary
 
 -- ****************************************************************************
 -- **                                                                        **
@@ -44,8 +46,8 @@ local addonName, BUFFWATCHADDON = ...;
 BUFFWATCHADDON_G = { };
 
 BUFFWATCHADDON.NAME = "Buffwatch Classic";
-BUFFWATCHADDON.VERSION = "1.07b1";
-BUFFWATCHADDON.RELEASE_DATE = "29 Sep 2019";
+BUFFWATCHADDON.VERSION = "1.07";
+BUFFWATCHADDON.RELEASE_DATE = "01 Oct 2019";
 BUFFWATCHADDON.HELPFRAMENAME = "Buffwatch Help";
 BUFFWATCHADDON.MODE_DROPDOWN_LIST = {
     "Solo",
@@ -175,25 +177,69 @@ function BUFFWATCHADDON_G.OnLoad(self)
     GroupBuffs.Buff = { };
     GroupBuffs.GroupName = { };
 
-    GroupBuffs.GroupName[1] = "Mage Armor"
+    GroupBuffs.GroupName[1] = "Mage Armor";
     GroupBuffs.Buff["Mage Armor"] = 1;
     GroupBuffs.Buff["Frost Armor"] = 1;
     GroupBuffs.Buff["Ice Armor"] = 1;
 
-    GroupBuffs.GroupName[2] = "Flasks"
-    GroupBuffs.Buff["Flask of Supreme Power"] = 2;
-    GroupBuffs.Buff["Flask of the Titans"] = 2;
-    GroupBuffs.Buff["Flask of Distilled Wisdom"] = 2;
-    GroupBuffs.Buff["Flask of Chromatic Resistance"] = 2;
-    GroupBuffs.Buff["Flask of Petrification"] = 2;
+    GroupBuffs.GroupName[2] = "Intellect";
+    GroupBuffs.Buff["Arcane Intellect"] = 2;
+    GroupBuffs.Buff["Arcane Brilliance"] = 2;
 
-    GroupBuffs.GroupName[3] = "Agility Elixirs"
-    GroupBuffs.Buff["Elixir of the Mongoose"] = 3;
-    GroupBuffs.Buff["Elixir of Greater Agility"] = 3;
+    GroupBuffs.GroupName[3] = "Fortitude";
+    GroupBuffs.Buff["Power Word: Fortitude"] = 3;
+    GroupBuffs.Buff["Prayer of Fortitude"] = 3;
 
-    GroupBuffs.GroupName[4] = "Armor Elixirs"
-    GroupBuffs.Buff["Elixir of Superior Defense"] = 4;
-    GroupBuffs.Buff["Elixir of Greater Defense"] = 4;
+    GroupBuffs.GroupName[4] = "Spirit";
+    GroupBuffs.Buff["Divine Spirit"] = 4;
+    GroupBuffs.Buff["Prayer of Spirit"] = 4;
+
+    GroupBuffs.GroupName[5] = "Mark of the Wild";
+    GroupBuffs.Buff["Mark of the Wild"] = 5;
+    GroupBuffs.Buff["Gift of the Wild"] = 5;
+
+    GroupBuffs.GroupName[6] = "Shadow Protection";
+    GroupBuffs.Buff["Shadow Protection"] = 6;
+    GroupBuffs.Buff["Prayer of Shadow Protection"] = 6;
+
+    GroupBuffs.GroupName[7] = "Might";
+    GroupBuffs.Buff["Blessing of Might"] = 7;
+    GroupBuffs.Buff["Greater Blessing of Might"] = 7;
+
+    GroupBuffs.GroupName[8] = "Wisdom";
+    GroupBuffs.Buff["Blessing of Wisdom"] = 8;
+    GroupBuffs.Buff["Greater Blessing of Wisdom"] = 8;
+
+    GroupBuffs.GroupName[9] = "Salvation";
+    GroupBuffs.Buff["Blessing of Salvation"] = 9;
+    GroupBuffs.Buff["Greater Blessing of Salvation"] = 9;
+
+    GroupBuffs.GroupName[10] = "Kings";
+    GroupBuffs.Buff["Blessing of Kings"] = 10;
+    GroupBuffs.Buff["Greater Blessing of Kings"] = 10;
+
+    GroupBuffs.GroupName[11] = "Light";
+    GroupBuffs.Buff["Blessing of Light"] = 11;
+    GroupBuffs.Buff["Greater Blessing of Light"] = 11;
+
+    GroupBuffs.GroupName[12] = "Sanctuary";
+    GroupBuffs.Buff["Blessing of Sanctuary"] = 12;
+    GroupBuffs.Buff["Greater Blessing of Sanctuary"] = 12;
+
+    GroupBuffs.GroupName[13] = "Flasks";
+    GroupBuffs.Buff["Flask of Supreme Power"] = 13;
+    GroupBuffs.Buff["Flask of the Titans"] = 13;
+    GroupBuffs.Buff["Flask of Distilled Wisdom"] = 13;
+    GroupBuffs.Buff["Flask of Chromatic Resistance"] = 13;
+    GroupBuffs.Buff["Flask of Petrification"] = 13;
+
+    GroupBuffs.GroupName[14] = "Agility Elixirs";
+    GroupBuffs.Buff["Elixir of the Mongoose"] = 14;
+    GroupBuffs.Buff["Elixir of Greater Agility"] = 14;
+
+    GroupBuffs.GroupName[15] = "Armor Elixirs";
+    GroupBuffs.Buff["Elixir of Superior Defense"] = 15;
+    GroupBuffs.Buff["Elixir of Greater Defense"] = 15;
 
     GroupBuffs.Group = { };
 
@@ -201,11 +247,11 @@ function BUFFWATCHADDON_G.OnLoad(self)
     --  which we can iterate through to check for a replacement
     for k, v in pairs(GroupBuffs.Buff) do
 
-      if GroupBuffs.Group[v] == nil then
-        GroupBuffs.Group[v] = { };
-      end
+        if GroupBuffs.Group[v] == nil then
+            GroupBuffs.Group[v] = { };
+        end
 
-      table.insert(GroupBuffs.Group[v], k);
+        table.insert(GroupBuffs.Group[v], k);
 
     end
 
@@ -239,8 +285,8 @@ end
         for i = 1, 10 do
             windowname = GetChatWindowInfo(i);
             if windowname and windowname == "BWDebug" then
-            debugchatframe = _G["ChatFrame"..i];
-            break;
+                debugchatframe = _G["ChatFrame"..i];
+                break;
             end
         end
 
@@ -308,7 +354,7 @@ end
 
             -- We have come out of combat, remove combat restrictions and process any pending events
             for _, v in pairs(Player_Info) do
-                local curr_lock = _G["BuffwatchFrame_PlayerFrame" .. v.ID .. "_Lock"]
+                local curr_lock = _G["BuffwatchFrame_PlayerFrame" .. v.ID .. "_Lock"];
                 curr_lock:Enable();
             end
 
@@ -318,7 +364,7 @@ end
 
             -- We have entered combat, enforce combat restrictions
             for _, v in pairs(Player_Info) do
-                local curr_lock = _G["BuffwatchFrame_PlayerFrame" .. v.ID .. "_Lock"]
+                local curr_lock = _G["BuffwatchFrame_PlayerFrame" .. v.ID .. "_Lock"];
                 curr_lock:Disable();
             end
 
@@ -372,7 +418,7 @@ function BUFFWATCHADDON_G.Set_AllChecks(checked)
     -- Toggle all checkboxes on or off
     for _, v in pairs(Player_Info) do
 
-        local curr_lock = _G["BuffwatchFrame_PlayerFrame" .. v.ID .. "_Lock"]
+        local curr_lock = _G["BuffwatchFrame_PlayerFrame" .. v.ID .. "_Lock"];
 
         if curr_lock:GetChecked() ~= checked then
             curr_lock:SetChecked(checked);
@@ -1550,19 +1596,17 @@ function BUFFWATCHADDON.Player_GetBuffs(v)
                                 -- Iterate Group for this buff
                                 for _, val in ipairs(GroupBuffs.Group[buffGroup]) do
 
-                                  if val ~= buff then
-                                    -- note: may need to start passing castername in here if we end up
-                                    --       having Special Buffs that also have replacements
-                                    buffid = BUFFWATCHADDON.FindBuff(playerbuffs, val);
+                                    if val ~= buff then
+                                        -- note: may need to start passing castername in here if we end up
+                                        --       having Special Buffs that also have replacements
+                                        buffid = BUFFWATCHADDON.FindBuff(playerbuffs, val);
 
-                                    if buffid ~= 0 then
-
-                                      buff = val;
-                                      break;
+                                        if buffid ~= 0 then
+                                            buff = val;
+                                            break;
+                                        end
 
                                     end
-
-                                  end
 
                                 end
 
@@ -2104,7 +2148,6 @@ function BUFFWATCHADDON.Add_InCombat_Events(value)
             elseif value[1] == "GetPlayerInfo" then
                 found = true;
                 break;
-
             end
 
         end
@@ -2454,8 +2497,8 @@ function BUFFWATCHADDON.Wait(delay, func, ...)
 end
 
 function BUFFWATCHADDON.CopyDefaults(from, to)
-    if not from then return { } end
-    if not to then to = { } end
+    if not from then return { }; end
+    if not to then to = { }; end
 
     for k, v in pairs(from) do
         if type(v) == "table" then
