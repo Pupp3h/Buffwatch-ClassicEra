@@ -63,6 +63,9 @@
 -- 1.14
 -- Fixed potential sort error when player has temporary enchants
 
+-- 1.15
+-- ToC update
+
 -- ****************************************************************************
 -- **                                                                        **
 -- **  Variables                                                             **
@@ -74,8 +77,8 @@ local addonName, BUFFWATCHADDON = ...;
 BUFFWATCHADDON_G = { };
 
 BUFFWATCHADDON.NAME = "Buffwatch Classic";
-BUFFWATCHADDON.VERSION = "1.14";
-BUFFWATCHADDON.RELEASE_DATE = "15 Mar 2020";
+BUFFWATCHADDON.VERSION = "1.15";
+BUFFWATCHADDON.RELEASE_DATE = "06 Aug 2020";
 BUFFWATCHADDON.HELPFRAMENAME = "Buffwatch Help";
 BUFFWATCHADDON.MODE_DROPDOWN_LIST = {
     "Solo",
