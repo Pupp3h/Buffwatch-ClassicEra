@@ -66,6 +66,9 @@
 -- 1.15
 -- ToC update
 
+-- 1.16
+-- Fixed Window sizing with Hide Unmonitored and player has temporary enchant
+
 -- ****************************************************************************
 -- **                                                                        **
 -- **  Variables                                                             **
@@ -77,8 +80,8 @@ local addonName, BUFFWATCHADDON = ...;
 BUFFWATCHADDON_G = { };
 
 BUFFWATCHADDON.NAME = "Buffwatch Classic";
-BUFFWATCHADDON.VERSION = "1.15";
-BUFFWATCHADDON.RELEASE_DATE = "06 Aug 2020";
+BUFFWATCHADDON.VERSION = "1.16";
+BUFFWATCHADDON.RELEASE_DATE = "31 Oct 2020";
 BUFFWATCHADDON.HELPFRAMENAME = "Buffwatch Help";
 BUFFWATCHADDON.MODE_DROPDOWN_LIST = {
     "Solo",
@@ -2133,7 +2136,7 @@ function BUFFWATCHADDON.ResizeWindow()
                 for _, v in pairs(Player_Info) do
                     if not _G["BuffwatchFrame_PlayerFrame"..v.ID.."_Lock"]:GetChecked()
                         or next(BuffwatchPlayerBuffs[v.Name]["Buffs"], nil) ~= nil
-                        or next(BuffwatchPlayerTempEnch, nil) ~= nil then
+                        or (v.IsUnitPlayer and next(BuffwatchPlayerTempEnch, nil) ~= nil) then
 
                         players = players + 1;
                     end
