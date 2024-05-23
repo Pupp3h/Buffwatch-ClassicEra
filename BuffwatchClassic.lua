@@ -75,6 +75,10 @@
 -- Fixed backdrops & border
 -- Fixed slider display in options
 
+-- 1.18
+-- ToC update to 11502
+-- Updated spell ranks
+
 -- ****************************************************************************
 -- **                                                                        **
 -- **  Variables                                                             **
@@ -86,8 +90,8 @@ local addonName, BUFFWATCHADDON = ...;
 BUFFWATCHADDON_G = { };
 
 BUFFWATCHADDON.NAME = "Buffwatch Classic";
-BUFFWATCHADDON.VERSION = "1.17";
-BUFFWATCHADDON.RELEASE_DATE = "12 Sep 2022";
+BUFFWATCHADDON.VERSION = "1.18";
+BUFFWATCHADDON.RELEASE_DATE = "23 May 2024";
 BUFFWATCHADDON.HELPFRAMENAME = "Buffwatch Help";
 BUFFWATCHADDON.MODE_DROPDOWN_LIST = {
     "Solo",

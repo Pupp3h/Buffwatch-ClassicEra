@@ -2,7 +2,7 @@
 
 Based on Buffwatch++, which has been maintained since wow vanilla 1.6.0
 
-Please note there are separate versions for WoW Classic Era (this one) & [WotLK Classic](https://github.com/Pupp3h/Buffwatch-Classic). If you use the CurseForge app it should grab the correct version for you.
+Please note there are separate versions for WoW Classic Era (this one) & [Cataclysm Classic](https://github.com/Pupp3h/Buffwatch-Classic). If you use the CurseForge app it should grab the correct version for you.
 
 Buffwatch is a buff monitoring tool for all classes which lets you easily and clearly keep track of any buffs on yourself or your party/raid, and also allows you to quickly recast your buffs at the click of a button.
 
