@@ -79,6 +79,10 @@
 -- ToC update to 11502
 -- Updated spell ranks
 
+-- 1.19
+-- ToC update to 11504
+-- Fixes to options panel and help text
+
 -- ****************************************************************************
 -- **                                                                        **
 -- **  Variables                                                             **
@@ -90,8 +94,8 @@ local addonName, BUFFWATCHADDON = ...;
 BUFFWATCHADDON_G = { };
 
 BUFFWATCHADDON.NAME = "Buffwatch Classic";
-BUFFWATCHADDON.VERSION = "1.18";
-BUFFWATCHADDON.RELEASE_DATE = "23 May 2024";
+BUFFWATCHADDON.VERSION = "1.19";
+BUFFWATCHADDON.RELEASE_DATE = "28 Sep 2024";
 BUFFWATCHADDON.HELPFRAMENAME = "Buffwatch Help";
 BUFFWATCHADDON.MODE_DROPDOWN_LIST = {
     "Solo",
@@ -2316,17 +2320,13 @@ end
 
 function BUFFWATCHADDON_G.OptionsToggle()
 
-    -- Call twice to get around issue of correct panel not opening on first try
-    InterfaceOptionsFrame_OpenToCategory(BUFFWATCHADDON.NAME);
-    InterfaceOptionsFrame_OpenToCategory(BUFFWATCHADDON.NAME);
+    Settings.OpenToCategory(BUFFWATCHADDON.NAME);
 
 end
 
 function BUFFWATCHADDON_G.ShowHelp()
 
-    -- Call twice to get around issue of correct panel not opening on first try
-    InterfaceOptionsFrame_OpenToCategory(BUFFWATCHADDON.HELPFRAMENAME);
-    InterfaceOptionsFrame_OpenToCategory(BUFFWATCHADDON.HELPFRAMENAME);
+    Settings.OpenToCategory(BUFFWATCHADDON.HELPFRAMENAME);
 
 end
 

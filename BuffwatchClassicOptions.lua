@@ -20,24 +20,20 @@ BUFFWATCHADDON_G.TOOLTIP.VISIBLE = "Show or hide the Buffwatch window";
 local BuffwatchTempConfig = {};
 local BuffwatchTempPlayerConfig = {};
 
-function BUFFWATCHADDON_G.Options_OnLoad(self)
+function BUFFWATCHADDON_G.HelpFrame_OnLoad(self)
+
+    local optionsFrame = _G["Buffwatch_Options"];
 
     Buffwatch_Options_Title:SetText(BUFFWATCHADDON.NAME);
 
-    self.name = BUFFWATCHADDON.NAME;
-    self.default = BUFFWATCHADDON.Options_SetDefaults;
-    self.refresh = BUFFWATCHADDON.Options_Init;
-    self.cancel = BUFFWATCHADDON.Options_CancelButton;
+    optionsFrame.name = BUFFWATCHADDON.NAME;
+    optionsFrame.default = BUFFWATCHADDON.Options_SetDefaults;
+    optionsFrame.refresh = BUFFWATCHADDON.Options_Init;
+    optionsFrame.cancel = BUFFWATCHADDON.Options_CancelButton;
 
-    InterfaceOptions_AddCategory(self);
+    Buffwatch_HelpFrameText_Title:SetText("  - |cff5555ffBuffwatch Usage|cffffffff - v|cffff5555" .. BUFFWATCHADDON.VERSION .. " |cffffffff- ");
 
-end
-
-function BUFFWATCHADDON_G.HelpFrame_OnLoad(self)
-    Buffwatch_HelpFrameText:SetText(
-    "  - |cff5555ffBuffwatch Usage|cffffffff - v|cffff5555" .. BUFFWATCHADDON.VERSION .. " |cffffffff- " .. [[
-
-
+    Buffwatch_HelpFrameText_Body:SetText([[
   1) Make sure the buffs you want to monitor are on the relevant
        players
 
@@ -55,13 +51,11 @@ function BUFFWATCHADDON_G.HelpFrame_OnLoad(self)
   4) Buffs that have expired will turn red, and clicking on them will
        recast the buff on the player (if you have the spell)
 
-
   Other features :
 
      - Left click a player name to target that player
 
      - Right click a player name to assist that player (target their target)
-
 
   Buffwatch commands (/buffwatch or /bfw):
 
@@ -78,13 +72,22 @@ function BUFFWATCHADDON_G.HelpFrame_OnLoad(self)
 ]] );
 
     self.name = BUFFWATCHADDON.HELPFRAMENAME;
-    self.parent = BUFFWATCHADDON.NAME;
+    self.parent = optionsFrame;
 
-    InterfaceOptions_AddCategory(self);
+    local category = Settings.RegisterCanvasLayoutCategory(optionsFrame, optionsFrame.name);
+    category.ID = optionsFrame.name;
+    Settings.RegisterAddOnCategory(category);
 
-    Buffwatch_HelpFrameText:ClearAllPoints();
-    Buffwatch_HelpFrameText:SetPoint("TOPLEFT", 10, -4);
-    Buffwatch_HelpFrameText:SetPoint("BOTTOMRIGHT", -55, 5);
+    local subcategory = Settings.RegisterCanvasLayoutSubcategory(category, self, self.name);
+    subcategory.ID = self.name;
+
+    Buffwatch_HelpFrameText_Title:ClearAllPoints();
+    Buffwatch_HelpFrameText_Title:SetPoint("TOPLEFT", 10, -4);
+    Buffwatch_HelpFrameText_Title:SetPoint("BOTTOMRIGHT", -55, 25);
+
+    Buffwatch_HelpFrameText_Body:ClearAllPoints();
+    Buffwatch_HelpFrameText_Body:SetPoint("TOPLEFT", 10, -30);
+    Buffwatch_HelpFrameText_Body:SetPoint("BOTTOMRIGHT", -55, 5);
 
 end
 
