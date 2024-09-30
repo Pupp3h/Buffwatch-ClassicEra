@@ -83,6 +83,9 @@
 -- ToC update to 11504
 -- Fixes to options panel and help text
 
+-- 1.20
+-- Workaround for UISliderTemplateWithLabels bug
+
 -- ****************************************************************************
 -- **                                                                        **
 -- **  Variables                                                             **
@@ -94,8 +97,8 @@ local addonName, BUFFWATCHADDON = ...;
 BUFFWATCHADDON_G = { };
 
 BUFFWATCHADDON.NAME = "Buffwatch Classic";
-BUFFWATCHADDON.VERSION = "1.19";
-BUFFWATCHADDON.RELEASE_DATE = "28 Sep 2024";
+BUFFWATCHADDON.VERSION = "1.20";
+BUFFWATCHADDON.RELEASE_DATE = "30 Sep 2024";
 BUFFWATCHADDON.HELPFRAMENAME = "Buffwatch Help";
 BUFFWATCHADDON.MODE_DROPDOWN_LIST = {
     "Solo",
