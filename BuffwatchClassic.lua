@@ -86,6 +86,10 @@
 -- 1.20
 -- Workaround for UISliderTemplateWithLabels bug
 
+-- 1.21
+-- Updated spell ranks
+-- Revert workaround for UISliderTemplateWithLabels bug
+
 -- ****************************************************************************
 -- **                                                                        **
 -- **  Variables                                                             **
@@ -97,8 +101,8 @@ local addonName, BUFFWATCHADDON = ...;
 BUFFWATCHADDON_G = { };
 
 BUFFWATCHADDON.NAME = "Buffwatch Classic";
-BUFFWATCHADDON.VERSION = "1.20";
-BUFFWATCHADDON.RELEASE_DATE = "30 Sep 2024";
+BUFFWATCHADDON.VERSION = "1.21";
+BUFFWATCHADDON.RELEASE_DATE = "04 Nov 2024";
 BUFFWATCHADDON.HELPFRAMENAME = "Buffwatch Help";
 BUFFWATCHADDON.MODE_DROPDOWN_LIST = {
     "Solo",
