@@ -90,6 +90,9 @@
 -- Updated spell ranks
 -- Revert workaround for UISliderTemplateWithLabels bug
 
+-- 1.22
+-- Updated ToC for Classic (11508) and Anniversary (20505)
+
 -- ****************************************************************************
 -- **                                                                        **
 -- **  Variables                                                             **
@@ -101,8 +104,8 @@ local addonName, BUFFWATCHADDON = ...;
 BUFFWATCHADDON_G = { };
 
 BUFFWATCHADDON.NAME = "Buffwatch Classic";
-BUFFWATCHADDON.VERSION = "1.21";
-BUFFWATCHADDON.RELEASE_DATE = "04 Nov 2024";
+BUFFWATCHADDON.VERSION = "1.22";
+BUFFWATCHADDON.RELEASE_DATE = "02 Feb 2026";
 BUFFWATCHADDON.HELPFRAMENAME = "Buffwatch Help";
 BUFFWATCHADDON.MODE_DROPDOWN_LIST = {
     "Solo",
